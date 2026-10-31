@@ -25,7 +25,7 @@ temperature: 0
 
 //Calling LLM
 async function callModel(state) {
-    console.log("call LLM...............");
+    // console.log("calling LLM..............."); 
     const response = await model.invoke(state.messages)
     return {messages: [response]};  //return {messages: [...state.messages, response]} (for history)
 }
@@ -44,6 +44,7 @@ const workflow = new StateGraph(MessagesAnnotation)
   .addNode("tools", toolNode)
   .addEdge("__start__", "agent")
   .addConditionalEdges("agent", shouldContinue)
+  .addEdge("tools", "agent") // new line
   .compile({checkpointer});
 
 async function main() {
@@ -54,7 +55,7 @@ async function main() {
 
   while (true) {
     const question = await rl.question("User : ");
-    if (question == "bye") break;
+    if (question == "done") break;
 
     const finalState = await workflow.invoke({
       messages: [
@@ -70,6 +71,7 @@ async function main() {
     //console.log("final ", finalState);
     const lastMessage = finalState.messages[finalState.messages.length - 1]
     console.log(lastMessage.content);
+    console.log();
   }
 
   rl.close();
